@@ -136,11 +136,25 @@ def main():
         profiles.append(parse_profile(rows, name))
 
     profiles.sort(key=lambda p: p["nm"].lower())
-    names = sorted({p["nm"] for p in profiles}, key=str.lower)
+    profile_names = {p["nm"].lower() for p in profiles}
 
     html = HTML.read_text(encoding="utf-8")
+    existing = []
+    m = re.search(r"var CLIENTLIST=(\[.*?\]);", html, re.DOTALL)
+    if m:
+        existing = json.loads(m.group(1))
+
+    merged = [p["nm"] for p in profiles]
+    seen = set(profile_names)
+    for name in existing:
+        key = name.lower()
+        if key not in seen:
+            merged.append(name)
+            seen.add(key)
+    merged.sort(key=str.lower)
+
     profiles_json = json.dumps(profiles, ensure_ascii=False, separators=(",", ":"))
-    names_json = json.dumps(names, ensure_ascii=False, separators=(",", ":"))
+    names_json = json.dumps(merged, ensure_ascii=False, separators=(",", ":"))
 
     html, n1 = re.subn(
         r"var CLIENT_PROFILES=\[.*?\];",
@@ -161,8 +175,9 @@ def main():
         raise SystemExit("Failed to replace CLIENT_PROFILES or CLIENTLIST in index.html")
 
     HTML.write_text(html, encoding="utf-8")
+    extra = len(merged) - len(profiles)
     print(f"Imported {len(profiles)} client profiles into index.html")
-    print(f"Updated CLIENTLIST with {len(names)} names")
+    print(f"Updated CLIENTLIST with {len(merged)} names ({extra} without Excel profile)")
 
 
 if __name__ == "__main__":
