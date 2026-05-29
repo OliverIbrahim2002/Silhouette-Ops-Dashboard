@@ -50,9 +50,180 @@
 .pf-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:14px}.pf-card{background:var(--card);border:1px solid var(--card-b);border-radius:var(--rs);padding:14px}.pf-card-l{font-size:9px;text-transform:uppercase;letter-spacing:.8px;font-weight:600;color:var(--warm);margin-bottom:4px}.pf-card-v{font-family:var(--fd);font-size:20px;font-weight:700}
 .pf-timeline{position:relative;padding-left:24px}.pf-timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--sand-m)}.pf-tl-item{position:relative;padding:8px 0 16px}.pf-tl-dot{position:absolute;left:-20px;top:12px;width:12px;height:12px;border-radius:50%;border:2px solid var(--card);z-index:1}.pf-tl-date{font-size:11px;color:var(--warm);font-weight:600}.pf-tl-body{font-size:12px;margin-top:2px}
 .pf-pkg{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--sand);font-size:12px}.pf-pkg:last-child{border-bottom:none}.pf-pkg-idx{width:24px;height:24px;border-radius:50%;background:var(--rose-fd);color:var(--rose);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+
+/* ═══ MOBILE ═══ */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--sb-bg);z-index:100;padding:4px 0;border-top:1px solid rgba(255,255,255,.1);padding-bottom:env(safe-area-inset-bottom,4px)}
+.mob-nav-inner{display:flex;justify-content:space-around;align-items:center}
+.mob-tab{display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 2px;color:rgba(255,255,255,.4);font-size:8px;font-weight:600;letter-spacing:.2px;cursor:pointer;border:none;background:none;font-family:var(--fb);-webkit-tap-highlight-color:transparent}
+.mob-tab svg{width:18px;height:18px}
+.mob-tab.on{color:var(--rose-lt)}
+.mob-more-menu{position:fixed;bottom:60px;right:10px;background:var(--sb-bg);border-radius:var(--r);padding:8px;z-index:101;box-shadow:0 8px 30px rgba(0,0,0,.3);display:none;min-width:160px}
+.mob-more-menu.open{display:block}
+.mob-more-it{display:flex;align-items:center;gap:10px;padding:10px 14px;color:rgba(255,255,255,.7);font-size:12px;font-weight:500;border-radius:var(--rs);cursor:pointer;border:none;background:none;width:100%;font-family:var(--fb)}
+.mob-more-it:hover,.mob-more-it:active{background:var(--sb-hov);color:#fff}
+.mob-more-it svg{width:16px;height:16px}
+
+/* Right panel data shown inline on mobile */
+.mob-rp-section{display:none;background:var(--card);border:1px solid var(--card-b);border-radius:var(--r);padding:14px;margin-top:4px}
+
+@media(max-width:900px){
+  .mob-nav{display:block}
+  .mob-rp-section{display:block}
+  .L{grid-template-areas:"tb" "mn";grid-template-columns:1fr;grid-template-rows:48px 1fr;height:100vh;height:100dvh;width:100%}
+  .sb{display:none!important}
+  .rp{display:none!important}
+  .mn{padding:12px;padding-bottom:72px;gap:12px;-webkit-overflow-scrolling:touch}
+  .tb{padding:0 12px;height:48px}
+  .tb-l{font-size:11px}
+  .tb-l .cr{font-size:11px}
+  .tb-r{gap:8px}
+  .tb-r>span:not(.tb-av):not(.tb-role){display:none}
+  .tb-role{font-size:8px;padding:2px 6px}
+  .tb-ic{width:30px;height:30px;font-size:12px}
+  .tb-av{width:30px;height:30px;font-size:10px}
+  
+  /* Title */
+  .mtit{font-size:20px}
+  .mhdr{gap:6px}
+  .mhr{gap:6px}
+  
+  /* Stat cards: 2x2 grid */
+  .ov-stat{padding:10px;flex:unset!important;min-width:0!important}
+  .ov-stat-icon{width:30px;height:30px;font-size:14px}
+  .ov-stat-v{font-size:20px}
+  .ov-stat-l{font-size:7px;letter-spacing:.4px}
+  
+  /* Week grid */
+  .ov-week{grid-template-columns:repeat(7,1fr);gap:3px}
+  .ov-daycard{padding:6px 3px;min-height:58px;text-align:center}
+  .ov-dh{font-size:7px;letter-spacing:.3px}
+  .ov-dd{font-size:15px;margin:1px 0 3px}
+  .ov-dc{font-size:7px}
+  
+  /* Overview tabs: horizontal scroll */
+  .ov-tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;gap:0;scrollbar-width:none}
+  .ov-tabs::-webkit-scrollbar{display:none}
+  .ov-tab{white-space:nowrap;padding:8px 12px;font-size:10px;flex-shrink:0}
+  
+  /* Grids single col */
+  .ov-grid{grid-template-columns:1fr!important;gap:10px}
+  
+  /* Calendar */
+  .sch-days{gap:1px}
+  .sch-day{padding:6px 2px;font-size:10px}
+  .sch-dow{font-size:7px;padding:3px 0;letter-spacing:.5px}
+  .sch-monthnav .lbl{font-size:14px;min-width:120px}
+  .sch-monthnav .arr{width:26px;height:26px;font-size:12px}
+  .sch-legend{font-size:8px;gap:6px}
+  .sch-legend i{width:7px;height:7px;margin-right:2px}
+  
+  /* Schedule table */
+  .sg{table-layout:auto!important}
+  .sg th{padding:4px 2px;font-size:7px;letter-spacing:.3px}
+  .sg th.room-h{font-size:9px}
+  .sg td{padding:2px;height:36px}
+  .sg td.time-col{width:36px;font-size:8px}
+  .sg td.inst-col{width:32px}
+  .sg th.time-h{width:36px}
+  .sg th.inst-h{width:32px;font-size:7px}
+  .chip{font-size:7px;padding:1px 3px;gap:1px;border-radius:4px}
+  .chip .cname{max-width:50px;overflow:hidden;text-overflow:ellipsis}
+  .chip .ss{font-size:6px}
+  .chip .x{font-size:7px}
+  .chip .pd{width:4px;height:4px}
+  .att-bar{gap:0}
+  .ab{width:11px;height:11px;font-size:5px}
+  .inst-pill{width:24px!important;height:24px!important;min-width:24px!important;min-height:24px!important;font-size:8px!important}
+  
+  /* CRM pipeline */
+  .crm-pipe{min-height:260px}
+  .crm-col{flex:0 0 160px;max-height:350px}
+  .crm-col-h{padding:8px 10px;font-size:9px;letter-spacing:.5px}
+  .crm-col-h .cnt{font-size:8px;padding:1px 5px}
+  .crm-card{padding:7px 9px;font-size:9px}
+  .crm-card .cn{font-size:10px}
+  .crm-card .cm{font-size:8px}
+  
+  /* Reminders */
+  .rem-row{padding:8px 10px;font-size:11px;gap:8px}
+  .rem-check{width:18px;height:18px;font-size:9px}
+  .rem-badge{font-size:7px;padding:1px 4px}
+  
+  /* Client DB */
+  .cdb-bar{gap:6px}
+  .cdb-search{min-width:0!important;padding:8px 10px}
+  .cdb-search input{font-size:12px}
+  .cdb-row{padding:8px 10px;gap:8px}
+  .cdb-av{width:28px;height:28px;font-size:9px}
+  .cdb-name{font-size:11px}
+  .cdb-meta{font-size:8px;gap:3px}
+  .cdb-count{font-size:10px;padding:6px 10px}
+  .cdb-acts{gap:2px}
+  .cdb-act{width:24px;height:24px;font-size:9px}
+  
+  /* Instructors */
+  .inst-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px}
+  .inst-card{padding:12px}
+  .inst-ava{width:46px!important;height:46px!important;font-size:15px!important}
+  .inst-name{font-size:13px}
+  
+  /* Profiles */
+  .pf-header{flex-direction:column;text-align:center;padding:14px;gap:10px}
+  .pf-avatar{width:50px;height:50px;font-size:16px}
+  .pf-name{font-size:18px}
+  .pf-meta{justify-content:center;font-size:10px;gap:6px}
+  .pf-back{font-size:11px;margin-bottom:4px}
+  .pf-cards{grid-template-columns:repeat(2,1fr);gap:6px}
+  .pf-card{padding:8px 10px}
+  .pf-card-l{font-size:7px;margin-bottom:2px}
+  .pf-card-v{font-size:14px!important}
+  .pf-pkg{padding:8px 10px;gap:8px;font-size:11px}
+  .pf-pkg-idx{width:20px;height:20px;font-size:8px}
+  
+  /* Modal */
+  .modal-bg{padding:8px}
+  .modal{max-width:100%;border-radius:var(--r)}
+  .modal-h{padding:14px 16px 10px}
+  .modal-h h3{font-size:16px}
+  .modal-b{padding:12px 16px}
+  .modal-f{padding:10px 16px;flex-wrap:wrap}
+  .fm-g{margin-bottom:12px}
+  .fm-i{padding:9px 12px;font-size:12px}
+  .fm-row{grid-template-columns:1fr!important}
+  .fm-l{font-size:10px}
+  
+  /* Login */
+  .login-box{padding:24px 18px;margin:12px;max-width:none}
+  .login-box h2{font-size:20px}
+  
+  /* Buttons */
+  .btn{padding:7px 12px;font-size:10px}
+  .btn.sm{padding:5px 10px;font-size:9px}
+  .tpills{flex-wrap:nowrap}
+  .tp{padding:5px 10px;font-size:10px}
+  
+  /* Cards */
+  .cd{border-radius:var(--rs)}
+  .cd-h{padding:10px 12px 8px;gap:6px}
+  .cd-t{font-size:15px}
+  .cd-b{padding:0 12px 12px}
+  
+  /* Error bar */
+  .err-b{font-size:10px;padding:8px 12px;border-radius:8px}
+}
+
+@media(max-width:380px){
+  .pf-cards{grid-template-columns:1fr}
+  .ov-daycard{padding:4px 2px;min-height:50px}
+  .ov-dd{font-size:13px}
+  .mob-tab{font-size:7px;padding:3px 1px}
+  .mob-tab svg{width:16px;height:16px}
+}
 </style></head><body>
 <div id="loginScreen"></div>
 <div class="L" id="app" style="display:none"></div>
+<div class="mob-more-menu" id="mobMore"></div>
+<nav class="mob-nav" id="mobNav"></nav>
 <div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()"><div class="modal" id="modalBox"></div></div>
 <script>
 var CLIENTLIST=["Abir Chedid","Ahlam Farhat","Alexa Acaf","Alia Chammas","Alice Abi Nader","Aline","Alisia Rahi","Andrea Araj","Angela Nicolas","Anna Aya","Anna Khalil","Anna Maria Faddoul","Antoinette Haddad","Antoinette Salameh","Aya Abboud","Aya Atallah","Aya Merhi","Aya Saad","Aya Sarkis","Bahia Karim","Batoul Sabagh","Bayan Shikhy","Brigitte Chehwan","Carole Saba","Carolina Tabbal","Caroline Khairallah","Celine Daou","Celine Ellieh","Chafic Khalife","Chantale Sadek","Charlie Fakhry","Chimene Bejjani","Chloe Daccache","Chloe Haouchab","Christa Geagea","Christa Issa","Christelle Chakar","Christelle Khairallah","Christelle Khoury","Christelle Tabet","Christia Issa","Christiane Khalife","Clara Chamy","Clara Mitri","Clara Zeiden","Clarita Obeid","Clea Obeid","Clemence Ziade","Coralie Rizk","Cynthia Jeitani","Daniella","Diana Audi","Dina Sassine","Dolla El Helou","Dr Margot","Dunia Zgheib","Elena Medvedeva","Eliana Antonios","Eliana Yaacoub","Eline Nassour","Elise Bamil","Elise Doumit","Elise Gerges","Elissa Bacha","Elissa Ghadieh","Elyssa Hajj","Erika Bou Khalil","Eva Jabbour","Farah","Gael Wheibe","Gaelle Bouery","Gaelle Choucair","Gaelle Khalife","Georges El Azzi","Georgia Bou Khalil","Gilberte Daou","Gladise Akiki","Gloria Kiwan","Grace El Khoury","Hala Ksamny","Hala Zgheib","Hanane Demian","Hoda Challita","Ismene Sakr","Jackie Kamel","Jackie Kmeid","Jacqueline El Aam","Jacqueline Fares","Jaky Korkomaz","Jana Abou Rjeily","Jana Chaaya","Jana Darwich","Jana Masri","Jane Mhanna","Jennifer Chehwan","Jennifer Najem","Jennifer Najm","Jenny Mtanios","Jessica Khalil","Jessica Mrad","Jessy Akiki","Jihane Barakat","Joanna Dina","Joanne Chreim","Joanne Mikhael","Jocelynne Abi Khalil","Jocelynne Gebara","Joelle Bekaakafry","Joelle El Aam","Joelle Jabbour","Joelle Nohra","Josiane Abdel Sater","Josiane Azzi","Josiane Demian","Josiane Helou","Joumana Daaboul","Joya Abboud","Joya Maria Daccache","Joya Obeid","Joyce Chaaya","Juliana Daccache","Karen Abi Khalil","Karen Ayanian","Karen Irani","Kaylee Khoury","Kimie Rizk","Laetitia Neeman","Lama Frem","Lara Nassif","Lara Stephan","Laudie Salloum","Layla Farah","Layla Mchantaf","Lea Azzi","Lea Mchantaf","Lea Nasr","Lea Saab","Lea Samir","Lianna Ammar","Liliane Hajj","Lina Azar","Lorisse Keyrouz","Louna Keshishian","Louna Mdawar","Louna Tahan","Luana Kmeid","Luanna Kmeid","Lynn Chedid","Lynn Daccache","Lynn Fares","Lynn Harfouch","Lynn Nehme","Magalie Assi","Maha Mazraani","Maha Rizk","Maha Saad","Manale Wehbe","Mandy Samaha","Margot Wehbe","Maria Bacha","Maria Chami","Maria Georges Kara","Maria Kmeid","Maria Mazraani","Maria Mouawad","Mariane Salameh","Marianne Basbous","Marianne Bchara","Marianne Bekaakafry","Marianne Salameh","Marie Abi Habib","Marie Joe Zeidan","Marie Joelle Oueiss","Marie Jose Kawerk","Marie Jose Nassar","Marie Khoury","Marie-Joe Mahfouz","Marie-Jose Sfeir","Mariebelle Moukawam","Marielle Khoury","Mariette Mokbel","Marilynne Harfouch","Marilynne Jabbour","Marinette Samaha","Maritta Akiki","Maritta Azzi","Marleine Moussa","Marlo Moujaber","Mathilda Mansour","May El Hachem","May Semaan","Maya Allam","Maya Chili","Maya El Feregh","Mayssa Siham","Mazen Sfeir","Meline Elias","Melissa Fares","Melissa Kamel","Michelle Bou Younes","Micheline Abi Khalil","Micheline Pangayao","Mira Atallah","Mira Mchantaf","Mireille Mich","MJ","Monique","Myrena Khansa","Myriam Atallah","Myriam Mokbel","Nada Barakat","Nada Darwich","Nada Merhej","Nadim Farraj","Nadine Aramouny","Nadine Bouery","Nadine Chehade","Nadine Chlala","Nadine Daccache","Nadine Moutran","Najwa Aya","Najwa Ismene","Namya Azar","Nancy Choueiry","Nastasia Tirs","Natalya Chammas","Natalya Gebara","Nathalie Makhlouf","Nathalie Mokbel","Nathalie Saba","Nay El Hachem","Nayla Abi Habib","Nayla Rassi","Neemat Tarrazi","Nelly Akra","Nicole Kamel","Nicole Kmeid","Nidal Barakat","Nidal Hachem","Nihaya Kassis","Nina Daccache","Nisrine Khoury","Nivine Rahal","Noelle Zeinoun","Nour Bacha","Nour Keyrouz","Noya Bacha","Odette Bassil","Pamela Kallasi","Paola Kiwan","Pascal Chimaly","Patricia Moussa","Paty Akiki","Perla Chemali","Pia Hachem","Pia Nehme","Prisca Mokled","Racha Bghayle","Rachelle Chehwan","Rachelle Indevco","Rachelle Zgheib","Rana Abboud","Rania Nehme","Rania Safar","Rania Tirs","Rasha Bghayle","Rawad Sfeir","Rawane Adem","Rebecca Kmeid","Rebecca Mahfoud","Remonda Geha","Remy Chahoud","Rhea Akiki","Rhea Challita","Rim El Hachem","Rima Chehwan","Rima Geagea","Rima Sayrafi","Rita Acaf","Rita Azzi","Rita Dafir","Rita El Sayfi","Rita Khoury","Rita Mahfoud","Rita Makhoul","Rita Mikhael","Romy Wakim","Rosie Rizk","Rouanne Khoury","Roula Azzi","Roula Chlela","Roula Karam","Sabine Soueidi","Sahar Chehwan","Sahar Rizk","Samia Kassouf","Samia Madarani","Sandra Assaf","Sandra Nahra","Sara Achkar","Sara Dahdah","Sara Hakme","Sara Makhoul","Sara Richmany","Sasha Nawar","Sasha Sily","Sasha Zgheib","Serena Habchy","Serena Saba","Serge Cherfan","Sibylle Selwan","Sonia Chakarjian","Sophia Hala","Sophia Zgheib","Souad Trad","Stacy Helou","Stephanie Basmaji","Stephanie Gemayel","Stephanie Harb","Stephanie Hnein","Steve El Azzi","Suzanna Semaan","Suzanne Estephan","Suzanne Makhoul","Suzi Basmaji","Sylvana Boustany","Tala Hbous","Talia Faddoul","Tamara Rita","Tatiana Bakhous","Tatiana Habib","Tatiana Moussa","Thea Abi Khalil","Theresa Gerges","Theresia Moukawam","Tianna Chlela","Tina Salem","Tracy Abi Habib","Tracy Khalil","Valerie El Khoury","Vanessa Akiki","Vanessa Sawam","William Ghorayeh","Yana Ammar","Yara Anjam","Yara Bchara","Yara El Khoury","Yara El Kozah","Yara Ellieh","Yara Farraj","Yara Makhoul","Yara Succar","Yasmina Karim","Yasmina Khansa","Zea Baron"];
@@ -207,6 +378,10 @@ function calNav(d){S.calMonth+=d;if(S.calMonth>11){S.calMonth=0;S.calYear++;}if(
 function selDay(y,m,d){S.selDate=new Date(y,m,d);S.calYear=y;S.calMonth=m;render();}
 function setOvRange(s,e){S.ovRangeStart=s;S.ovRangeEnd=e;render();}
 
+function toggleMobMore(){var m=document.getElementById('mobMore');m.classList.toggle('open');}
+function closeMobMore(){var m=document.getElementById('mobMore');m.classList.remove('open');}
+document.addEventListener('click',function(e){var m=document.getElementById('mobMore');if(m&&m.classList.contains('open')&&!m.contains(e.target)&&!e.target.closest('.mob-tab'))m.classList.remove('open');});
+
 // ═══ RENDER ═══
 function render(){
 const sy=S.selDate.getFullYear(),sm=S.selDate.getMonth(),sd=S.selDate.getDate();
@@ -249,7 +424,7 @@ if(S.page==='overview'){
   h+=`<div class="mhdr"><h2 class="mtit">Overview</h2><div class="mhr">
     <div class="tpills"><button class="tp ${S.tab==='pilates'?'on':''}" onclick="S.tab='pilates';render()">Pilates</button><button class="tp ${S.tab==='lagree'?'on':''}" onclick="S.tab='lagree';render()">Lagree</button></div></div></div>
 
-  <div style="display:flex;gap:14px;flex-wrap:wrap">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
     <div class="ov-stat" style="flex:1;min-width:130px"><div class="ov-stat-icon" style="background:var(--rose-fd);color:var(--rose)">📅</div><div><div class="ov-stat-v">${todayCnt}</div><div class="ov-stat-l">Today</div></div></div>
     <div class="ov-stat" style="flex:1;min-width:130px"><div class="ov-stat-icon" style="background:var(--grn-pl);color:var(--grn)">👥</div><div><div class="ov-stat-v">${activeInRange.size}</div><div class="ov-stat-l">Active (range)</div></div></div>
     <div class="ov-stat" style="flex:1;min-width:130px"><div class="ov-stat-icon" style="background:var(--amb-pl);color:var(--amb)">⭐</div><div><div class="ov-stat-v">${newClients.length}</div><div class="ov-stat-l">New Clients</div></div></div>
@@ -361,6 +536,17 @@ if(S.page==='schedule'){
         h+=`<span class="x" onclick="event.stopPropagation();removeFromCell('${ck}','${n.replace(/'/g,"\\'")}')">✕</span></div>`;}
       h+=`</td>`;}});h+=`</tr>`;});
   h+=`</tbody></table></div>`;
+  // Mobile: show day summary inline (hidden on desktop via CSS)
+  const mdc=[];for(const kk in S.scheduleData){if(kk.startsWith(S.tab+'|'+dk+'|')){const pp=kk.split('|');S.scheduleData[kk].forEach(n=>mdc.push({name:clean(n),room:pp[2],hour:parseInt(pp[3]),raw:n,ck:kk}));}}
+  let maC=0,maN=0,maR=0,maP=0;mdc.forEach(c=>{const a=getAtt(c.ck,c.raw);if(a==='came')maC++;else if(a==='noshow')maN++;else if(a==='resched')maR++;else maP++;});
+  h+=`<div class="mob-rp-section"><div style="font-family:var(--fd);font-size:15px;font-weight:700;margin-bottom:8px">Day Summary</div>`;
+  if(mdc.length){
+    h+=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><span style="font-size:9px;padding:2px 6px;border-radius:6px;background:var(--grn-pl);color:var(--grn-dk);font-weight:600">${maC} came</span><span style="font-size:9px;padding:2px 6px;border-radius:6px;background:var(--red-pl);color:var(--red);font-weight:600">${maN} no-show</span><span style="font-size:9px;padding:2px 6px;border-radius:6px;background:var(--amb-pl);color:var(--amb-dk);font-weight:600">${maR} resched</span><span style="font-size:9px;padding:2px 6px;border-radius:6px;background:var(--sand);color:var(--warm);font-weight:600">${maP} pending</span></div>`;
+    h+=mdc.sort((a,b)=>a.hour-b.hour).map(c=>{const db=findClient(c.name);const att=getAtt(c.ck,c.raw);const col=att==='came'?'var(--grn)':att==='noshow'?'var(--red)':att==='resched'?'var(--amb)':'var(--sand-d)';return`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--sand)"><div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600${att==='noshow'?';text-decoration:line-through;opacity:.6':''}">${c.name}</div><div style="font-size:9px;color:var(--warm)">${fmtH(c.hour)} • ${c.room}</div></div></div>`;}).join('');
+  } else {
+    h+=`<div style="text-align:center;padding:10px;color:var(--light);font-size:11px">No clients scheduled</div>`;
+  }
+  h+=`</div>`;
 }
 
 // ═══ CLIENTS ═══
@@ -453,6 +639,24 @@ if(S.page==='schedule'){
 }
 h+=`</aside>`;
 document.getElementById("app").innerHTML=h;
+
+// Mobile nav
+var mobEl=document.getElementById('mobNav');
+if(mobEl){
+  var mp=[
+    {id:'overview',icon:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',l:'Home'},
+    {id:'schedule',icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',l:'Schedule'},
+    {id:'clients',icon:'<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>',l:'Clients'},
+    {id:'profiles',icon:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',l:'Profiles'},
+    {id:'_more',icon:'<circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>',l:'More'}
+  ];
+  mobEl.innerHTML='<div class="mob-nav-inner">'+mp.map(function(p){
+    if(p.id==='_more') return '<button class="mob-tab" onclick="toggleMobMore()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+p.icon+'</svg>'+p.l+'</button>';
+    return '<button class="mob-tab'+(S.page===p.id?' on':'')+'" onclick="nav(\''+p.id+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'+p.icon+'</svg>'+p.l+'</button>';
+  }).join('')+'</div>';
+  var mm=document.getElementById('mobMore');
+  if(mm)mm.innerHTML='<button class="mob-more-it" onclick="nav(\'instructors\');closeMobMore()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/></svg>Instructors</button><button class="mob-more-it" onclick="refresh();closeMobMore()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>Refresh</button><button class="mob-more-it" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Logout</button>';
+}
 }
 
 // Calendar range picker
