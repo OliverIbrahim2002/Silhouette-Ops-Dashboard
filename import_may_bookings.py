@@ -8,7 +8,7 @@ from pathlib import Path
 
 NS = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 HTML = Path(__file__).parent / "index.html"
-YEAR, MONTH = 2026, 5
+YEAR, MONTH = 2026, 5  # overridden by import_june_bookings.py when needed
 SKIP_NAMES = {"client", "hour", "date", "total", "rendre 20 caisse"}
 SKIP_SUBSTR = ("int pil", "caisse")
 
