@@ -234,11 +234,7 @@
   .mob-tab{font-size:7px;padding:3px 1px}
   .mob-tab svg{width:16px;height:16px}
 }
-.sync-pill{font-size:9px;font-weight:700;padding:3px 8px;border-radius:12px;white-space:nowrap}.sync-pill.live{background:var(--grn-pl);color:var(--grn-dk)}.sync-pill.local{background:var(--sand);color:var(--warm)}.sync-pill.err{background:var(--red-pl);color:var(--red)}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js" onerror="console.warn('supabase-config.js missing — copy supabase-config.example.js')"></script>
-<script src="js/supabase-sync.js"></script>
 </head><body>
 <div id="loginScreen"><div class="login-box" style="text-align:center"><div class="logo">S</div><h2>Silhouette Studio</h2><p style="color:var(--warm)">Loading dashboard…</p></div></div>
 <div class="L" id="app" style="display:none"></div>
@@ -334,7 +330,6 @@ let S={
   membershipLedger:JSON.parse(localStorage.getItem("sil-memb")||"{}"),
   membershipPayments:JSON.parse(localStorage.getItem("sil-memb-pay")||"[]"),
   accountSettings:JSON.parse(localStorage.getItem("sil-acct")||'{"claraCutPct":50,"defaultMonthlyFee":120,"sessionsPerMonth":8}'),
-  cloudConfigured:false,cloudOk:false,cloudLoaded:false,cloudErr:null,
 };
 function saveMemb(){localStorage.setItem("sil-memb",JSON.stringify(S.membershipLedger));}
 function saveMembPay(){localStorage.setItem("sil-memb-pay",JSON.stringify(S.membershipPayments));}
@@ -414,7 +409,7 @@ function getMembPaymentsInRange(start,end){const s=start<=end?start:end,e=start<
 function migrateMembershipPayments(){if(!S.membershipPayments)S.membershipPayments=[];if(S.membershipPayments.length)return;for(const mk in S.membershipLedger){(S.membershipLedger[mk]||[]).forEach(e=>{S.membershipPayments.push({id:e.id||Date.now()+Math.random(),name:e.name,amount:e.amount,paid:!!e.paid,notes:e.notes||'',date:mk+'-01',plan:'Monthly',at:e.at||new Date().toISOString()});});}if(S.membershipPayments.length)saveMembPay();}
 function fmtKpiNum(n){if(n==null||n==='')return '—';if(typeof n==='number'){if(n>=1000&&Number.isInteger(n))return n.toLocaleString();if(Number.isInteger(n))return String(n);return n.toFixed(2);}return String(n);}
 function mergeExcelMembershipImport(data){if(!data?.payments?.length)return;const as=S.accountSettings;as.kpis=data.kpis||{};as.importStats=data.stats||{};as.excelImportedAt=data.importedAt;const existing=new Set((S.membershipPayments||[]).map(p=>normName(p.name)+'|'+p.date+'|'+Math.round((p.amount||0)*100)));let added=0;data.payments.forEach(p=>{const k=normName(p.name)+'|'+p.date+'|'+Math.round((p.amount||0)*100);if(existing.has(k))return;const id=p.id||Date.now()+Math.random();S.membershipPayments.push({id,name:p.name,amount:p.amount,paid:p.paid!==false,notes:p.notes||'',plan:p.plan||'Package',date:p.date,at:p.at||new Date().toISOString()});existing.add(k);added++;const mk=p.date.slice(0,7);if(!S.membershipLedger[mk])S.membershipLedger[mk]=[];if(!S.membershipLedger[mk].find(e=>e.id===id))S.membershipLedger[mk].push({id,name:p.name,amount:p.amount,paid:p.paid!==false,notes:p.notes||'',at:p.at||new Date().toISOString()});});for(const nk in (data.clients||{})){const ic=data.clients[nk];let c=findClient(ic.name)||S.clientDB.find(x=>normName(x.name)===nk);if(!c){c={id:Date.now()+Math.random(),name:ic.name,membership:ic.membership||'',completed:ic.completedSessions||0,total:ic.totalSessions||0,type:ic.type||'pilates',notes:'',source:'Excel import',isFree:false,isNew:false,freeManualOff:false,paid:true,membershipFee:ic.membershipFee||0,purchaseHistory:ic.packages||[],lifetimeRevenue:ic.totalRevenue||0,purchaseCount:ic.purchaseCount||0};S.clientDB.push(c);}else{c.membership=ic.membership||c.membership;c.membershipFee=ic.membershipFee||c.membershipFee;c.completed=Math.max(c.completed||0,ic.completedSessions||0);c.total=Math.max(c.total||0,ic.totalSessions||0);c.paid=true;c.lifetimeRevenue=ic.totalRevenue||0;c.purchaseCount=ic.purchaseCount||0;c.purchaseHistory=ic.packages||[];}const st=S.pipeline[c.id];if(!st||st==='new_lead'||st==='trial_booked')S.pipeline[c.id]='active';}saveMembPay();saveMemb();saveDB();savePipe();saveAcct();console.log('Excel membership import: +'+added+' payments, '+Object.keys(data.clients||{}).length+' clients');return added;}
-async function loadExcelMembershipImport(force){const flag='sil-excel-import-v2';if(!force&&localStorage.getItem(flag))return 0;if(!force&&(S.membershipPayments||[]).length>400){localStorage.setItem(flag,'1');return 0;}try{const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),25000);const r=await fetch('data/excel-import.json?v=2',{signal:ctrl.signal});clearTimeout(t);if(!r.ok){console.warn('excel-import.json not found');return 0;}const data=await r.json();const n=mergeExcelMembershipImport(data);localStorage.setItem(flag,'1');if(S.cloudConfigured&&typeof SilCloud!=='undefined'&&SilCloud.isConfigured())await SilCloud.flushAllToCloud();if(typeof render==='function'&&document.getElementById('app')?.style.display!=='none')render();return n;}catch(e){console.warn('Excel import failed',e);return 0;}}
+async function loadExcelMembershipImport(force){const flag='sil-excel-import-v2';if(!force&&localStorage.getItem(flag))return 0;if(!force&&(S.membershipPayments||[]).length>400){localStorage.setItem(flag,'1');return 0;}try{const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),25000);const r=await fetch('data/excel-import.json?v=2',{signal:ctrl.signal});clearTimeout(t);if(!r.ok){console.warn('excel-import.json not found');return 0;}const data=await r.json();const n=mergeExcelMembershipImport(data);localStorage.setItem(flag,'1');if(typeof render==='function'&&document.getElementById('app')?.style.display!=='none')render();return n;}catch(e){console.warn('Excel import failed',e);return 0;}}
 function showClientRevenue(id){const c=S.clientDB.find(x=>x.id===id);if(!c)return;const hist=(c.purchaseHistory||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));const rows=hist.length?hist.map(p=>`<div style="padding:8px 0;border-bottom:1px solid var(--sand)"><div style="font-weight:600">${p.date||'—'} · $${(p.amount||0).toFixed(2)}</div><div style="font-size:11px;color:var(--warm)">${p.package||''}${p.from?' · '+p.from+' → '+(p.to||'ongoing'):''}</div></div>`).join(''):'<div style="padding:16px;color:var(--light)">No purchase history on file.</div>';openModal(`<div class="modal-h"><h3>${c.name}</h3><div class="modal-x" onclick="closeModal()">✕</div></div><div class="modal-b"><div class="acct-totals" style="margin-bottom:12px"><div class="memb-card"><div class="memb-card-l">Lifetime revenue</div><div class="memb-card-v">$${(c.lifetimeRevenue||0).toFixed(2)}</div></div><div class="memb-card"><div class="memb-card-l">Purchases</div><div class="memb-card-v">${c.purchaseCount||hist.length}</div></div><div class="memb-card"><div class="memb-card-l">Sessions (packages)</div><div class="memb-card-v">${c.total||0}</div></div></div><div style="font-size:12px;font-weight:700;margin-bottom:8px">Purchase track record</div><div style="max-height:320px;overflow-y:auto">${rows}</div></div>`);}
 const setAcctView=v=>{S.acctView=v;render();};
 function ovPickWeekDay(y,m,d){S.ovWeekSelDk=dateKey(y,m,d);S.selDate=new Date(y,m,d);render();}
@@ -466,36 +461,17 @@ function clientsInRange(start,end){
 }
 
 // LOGIN
-function showLogin(err){document.getElementById("loginScreen").style.display="flex";document.getElementById("app").style.display="none";const cloud=typeof SilCloud!=='undefined'&&SilCloud.isConfigured();const hint=cloud?`<p style="margin-top:8px;font-size:10px;color:var(--warm)">Team login — data syncs live across all devices.</p>`:`<p style="margin-top:16px;font-size:10px;color:var(--light)">Local mode (no cloud config). Password: Silhouette Studio</p>`;document.getElementById("loginScreen").innerHTML=`<div class="login-box"><div class="logo">S</div><h2>Silhouette Studio</h2><p>Sign in to your dashboard</p>${err?`<div class="err">${err}</div>`:''}<input class="fm-i" id="l-user" placeholder="Username" autocomplete="username" style="margin-bottom:12px"><br><input class="fm-i" id="l-pass" type="password" placeholder="Password" autocomplete="current-password" style="margin-bottom:16px"><br><button class="btn pri" style="width:100%;justify-content:center;padding:12px" onclick="doLogin()">Sign In</button>${hint}</div>`;setTimeout(()=>{const el=document.getElementById("l-user");if(el)el.focus();},100);}
-async function afterLogin(){
-  if(S.cloudConfigured&&SilCloud.isConfigured()){
-    await SilCloud.migrateLocalToCloudIfEmpty();
-    await SilCloud.loadAllFromCloud();
-    SilCloud.subscribeRealtime();
-    S.cloudOk=true;
-  }
+function showLogin(err){document.getElementById("loginScreen").style.display="flex";document.getElementById("app").style.display="none";document.getElementById("loginScreen").innerHTML=`<div class="login-box"><div class="logo">S</div><h2>Silhouette Studio</h2><p>Sign in to your dashboard</p>${err?`<div class="err">${err}</div>`:''}<input class="fm-i" id="l-user" placeholder="Username" autocomplete="username" style="margin-bottom:12px"><br><input class="fm-i" id="l-pass" type="password" placeholder="Password" autocomplete="current-password" style="margin-bottom:16px"><br><button class="btn pri" style="width:100%;justify-content:center;padding:12px" onclick="doLogin()">Sign In</button><p style="margin-top:16px;font-size:10px;color:var(--light)">Password: Silhouette Studio</p></div>`;setTimeout(()=>{const el=document.getElementById("l-user");if(el)el.focus();},100);}
+function afterLogin(){
   if(isInstructor()){S.page='schedule';S.selInstructor=myInstructorName();}
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("app").style.display="grid";
   render();
   if(!isInstructor())refresh();
 }
-async function doLogin(){
+function doLogin(){
   const u=document.getElementById("l-user").value.trim().toLowerCase();
   const p=document.getElementById("l-pass").value;
-  if(typeof SilCloud!=='undefined'&&SilCloud.isConfigured()){
-    const r=await SilCloud.signInWithUsername(u,p);
-    if(!r.ok){showLogin(r.error||'Login failed');return;}
-    S.role=r.profile?.role||'user';
-    S.user=r.profile?.username||u;
-    S.instructorName=r.profile?.instructor_name||null;
-    localStorage.setItem("sil-role",S.role);
-    localStorage.setItem("sil-user",S.user);
-    if(S.instructorName)localStorage.setItem("sil-instructor",S.instructorName);
-    else localStorage.removeItem("sil-instructor");
-    await afterLogin();
-    return;
-  }
   const acc=ACCOUNTS.find(a=>a.user===u&&a.pass===p);
   if(!acc){showLogin("Invalid username or password");return;}
   S.role=acc.role;S.user=acc.user;S.instructorName=acc.instructor||null;
@@ -503,11 +479,10 @@ async function doLogin(){
   localStorage.setItem("sil-user",S.user);
   if(S.instructorName)localStorage.setItem("sil-instructor",S.instructorName);
   else localStorage.removeItem("sil-instructor");
-  await afterLogin();
+  afterLogin();
 }
-async function logout(){
-  if(S.cloudConfigured&&SilCloud.isConfigured())await SilCloud.signOutCloud();
-  S.role=null;S.user=null;S.instructorName=null;S.cloudOk=false;
+function logout(){
+  S.role=null;S.user=null;S.instructorName=null;
   localStorage.removeItem("sil-role");
   localStorage.removeItem("sil-user");
   localStorage.removeItem("sil-instructor");
@@ -605,7 +580,7 @@ const rangeDays=getDaysInRange(rangeStart,rangeEnd);
 const pages=getVisiblePages();
 if(!canAccessPage(S.page))S.page=isInstructor()?'schedule':'overview';
 let h=`<nav class="sb"><div class="sb-br"><div class="sb-lg">S</div><div class="sb-nm">Silhouette<small>Studio</small></div></div><div class="sb-lb">Dashboard</div>${pages.map(p=>`<button class="sb-it ${S.page===p.id?'on':''}" onclick="nav('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${p.icon}</svg><span>${p.label}</span></button>`).join('')}<div class="sb-lb">Account</div>${!isInstructor()?`<button class="sb-it ${S.page==='account'?'on':''}" onclick="nav('account')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-1a6 6 0 0112 0v1"/></svg><span>Settings</span></button>`:''}<button class="sb-it" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg><span>Logout</span></button><div class="sb-sp"></div><div class="sb-ft"><p>© 2026 Silhouette Studio</p></div></nav>
-<header class="tb"><div class="tb-l"><span>Dashboard</span><span style="opacity:.35;margin:0 2px">/</span><span class="cr">${pages.find(p=>p.id===S.page)?.label||ALL_PAGES.find(p=>p.id===S.page)?.label||''}</span></div><div class="tb-r"><span class="tb-role ${S.role}">${roleLabel()}</span>${isInstructor()&&myInstructorName()?`<span style="font-size:10px;color:var(--warm)">${myInstructorName()}</span>`:''}${S.cloudConfigured?`<span class="sync-pill ${S.cloudOk?'live':S.cloudErr?'err':'local'}">${S.cloudOk?'● Live sync':S.cloudErr?'Sync error':'○ Local only'}</span>`:''}${S.synced&&!isInstructor()?`<span style="font-size:10px;color:var(--light)">Synced ${S.synced.toLocaleTimeString()}</span>`:''}${!isInstructor()?`<div class="tb-ic" onclick="refresh()">${S.loading?'<span style="animation:spin 1s linear infinite;display:inline-block">↻</span>':'↻'}</div>`:''}<div class="tb-av">${(isInstructor()?myInstructorName():S.user||'SS').slice(0,2).toUpperCase()}</div></div></header>
+<header class="tb"><div class="tb-l"><span>Dashboard</span><span style="opacity:.35;margin:0 2px">/</span><span class="cr">${pages.find(p=>p.id===S.page)?.label||ALL_PAGES.find(p=>p.id===S.page)?.label||''}</span></div><div class="tb-r"><span class="tb-role ${S.role}">${roleLabel()}</span>${isInstructor()&&myInstructorName()?`<span style="font-size:10px;color:var(--warm)">${myInstructorName()}</span>`:''}${S.synced&&!isInstructor()?`<span style="font-size:10px;color:var(--light)">Synced ${S.synced.toLocaleTimeString()}</span>`:''}${!isInstructor()?`<div class="tb-ic" onclick="refresh()">${S.loading?'<span style="animation:spin 1s linear infinite;display:inline-block">↻</span>':'↻'}</div>`:''}<div class="tb-av">${(isInstructor()?myInstructorName():S.user||'SS').slice(0,2).toUpperCase()}</div></div></header>
 <main class="mn">${S.err&&!S.errDismissed?`<div class="err-b"><span>${S.err}</span><span class="err-x" onclick="S.errDismissed=true;this.parentElement.remove()">✕</span></div>`:''}`;
 
 // ═══ OVERVIEW ═══
@@ -1031,33 +1006,17 @@ function ovWeekDayClick(y,m,d){ovPickWeekDay(y,m,d);}
 
 // FETCH
 function runClientCleanup(){const dupes=dedupeClientDB();const orphans=pruneOrphanClients();alert(`Cleanup complete.\n\n• ${dupes} duplicate record${dupes!==1?'s':''} merged\n• ${orphans} empty unused record${orphans!==1?'s':''} removed\n• ${S.clientDB.length} clients remaining`);render();}
-async function refresh(){S.loading=true;S.err=null;S.errDismissed=false;render();if(S.cloudConfigured&&SilCloud.isConfigured()){await SilCloud.loadAllFromCloud();}mergeMaySchedule();mergeJuneSchedule();const dupes=dedupeClientDB();const orphans=pruneOrphanClients();if(dupes||orphans)console.log(`Client cleanup: merged ${dupes} duplicates, removed ${orphans} orphans`);migrateMembershipPayments();applyAutoFreeNewTags();syncAllFreeToTrialBooked();syncScheduleFromCrm();if(S.cloudConfigured&&SilCloud.isConfigured())await SilCloud.flushAllToCloud();S.synced=new Date();S.loading=false;render();}
+async function refresh(){S.loading=true;S.err=null;S.errDismissed=false;render();mergeMaySchedule();mergeJuneSchedule();const dupes=dedupeClientDB();const orphans=pruneOrphanClients();if(dupes||orphans)console.log(`Client cleanup: merged ${dupes} duplicates, removed ${orphans} orphans`);migrateMembershipPayments();applyAutoFreeNewTags();syncAllFreeToTrialBooked();syncScheduleFromCrm();S.synced=new Date();S.loading=false;render();}
 
 // INIT
-(async function boot(){
+(function boot(){
   try{
-    if(typeof SilCloud!=='undefined')await SilCloud.initCloud();
     mergeMaySchedule();mergeJuneSchedule();
     const _dupesInit=dedupeClientDB();const _orphansInit=pruneOrphanClients();
     if(_dupesInit||_orphansInit)localStorage.setItem('sil-dedup-v2',JSON.stringify({merged:_dupesInit,orphans:_orphansInit,remaining:S.clientDB.length,at:new Date().toISOString()}));
     migrateMembershipPayments();applyAutoFreeNewTags();syncAllFreeToTrialBooked();syncScheduleFromCrm();
     if(!S.ovWeekSelDk)S.ovWeekSelDk=dateKey(S.selDate.getFullYear(),S.selDate.getMonth(),S.selDate.getDate());
-    const cfgOk=S.cloudConfigured&&typeof supabase!=='undefined'&&window.SUPABASE_CONFIG?.url&&window.SUPABASE_CONFIG?.anonKey;
-    let session=null;
-    if(cfgOk){try{const {data}=await supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey).auth.getSession();session=data?.session||null;}catch(e){console.warn('Supabase session',e);}}
-    if(session&&S.cloudConfigured){
-      const prof=await SilCloud.fetchProfile(session.user.id);
-      if(prof){S.role=prof.role;S.user=prof.username;S.instructorName=prof.instructor_name||null;}
-      await SilCloud.loadAllFromCloud();
-      SilCloud.subscribeRealtime();
-      S.cloudOk=true;
-      if(isInstructor()){if(!canAccessPage(S.page))S.page='schedule';if(!S.selInstructor&&myInstructorName())S.selInstructor=myInstructorName();}
-      document.getElementById("loginScreen").style.display="none";
-      document.getElementById("app").style.display="grid";
-      render();
-      setTimeout(()=>loadExcelMembershipImport().catch(()=>{}),50);
-      if(!isInstructor())setTimeout(()=>refresh().catch(()=>{}),100);
-    }else if(S.role){
+    if(S.role){
       if(isInstructor()){if(!canAccessPage(S.page))S.page='schedule';if(!S.selInstructor&&myInstructorName())S.selInstructor=myInstructorName();}
       document.getElementById("loginScreen").style.display="none";
       document.getElementById("app").style.display="grid";

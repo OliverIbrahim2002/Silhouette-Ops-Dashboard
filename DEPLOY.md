@@ -15,17 +15,7 @@ git commit -m "Your message here"
 git push origin main
 ```
 
-## Deploy to Vercel
-
-## Team sync (Supabase)
-
-For shared live data, finish Supabase setup — see **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)**.
-
-**On Vercel (no local Mac needed):** add environment variables `SUPABASE_URL` and `SUPABASE_ANON_KEY`, then **Redeploy**. The build generates `supabase-config.js` automatically.
-
-Or add `supabase-config.js` directly in the GitHub repo (see SUPABASE_SETUP.md Option B).
-
-# Deploy to Vercel (updates the live domain)
+## Deploy to Vercel (updates the live domain)
 
 ```bash
 cd "/Users/oliver/Desktop/Silhouette Dashboard"
