@@ -1,4 +1,4 @@
 {
-  "buildCommand": null,
+  "buildCommand": "node scripts/generate-supabase-config.js",
   "outputDirectory": "."
 }
