@@ -240,7 +240,7 @@
 <script src="supabase-config.js" onerror="console.warn('supabase-config.js missing — copy supabase-config.example.js')"></script>
 <script src="js/supabase-sync.js"></script>
 </head><body>
-<div id="loginScreen"></div>
+<div id="loginScreen"><div class="login-box" style="text-align:center"><div class="logo">S</div><h2>Silhouette Studio</h2><p style="color:var(--warm)">Loading dashboard…</p></div></div>
 <div class="L" id="app" style="display:none"></div>
 <div class="mob-more-menu" id="mobMore"></div>
 <nav class="mob-nav" id="mobNav"></nav>
@@ -414,7 +414,7 @@ function getMembPaymentsInRange(start,end){const s=start<=end?start:end,e=start<
 function migrateMembershipPayments(){if(!S.membershipPayments)S.membershipPayments=[];if(S.membershipPayments.length)return;for(const mk in S.membershipLedger){(S.membershipLedger[mk]||[]).forEach(e=>{S.membershipPayments.push({id:e.id||Date.now()+Math.random(),name:e.name,amount:e.amount,paid:!!e.paid,notes:e.notes||'',date:mk+'-01',plan:'Monthly',at:e.at||new Date().toISOString()});});}if(S.membershipPayments.length)saveMembPay();}
 function fmtKpiNum(n){if(n==null||n==='')return '—';if(typeof n==='number'){if(n>=1000&&Number.isInteger(n))return n.toLocaleString();if(Number.isInteger(n))return String(n);return n.toFixed(2);}return String(n);}
 function mergeExcelMembershipImport(data){if(!data?.payments?.length)return;const as=S.accountSettings;as.kpis=data.kpis||{};as.importStats=data.stats||{};as.excelImportedAt=data.importedAt;const existing=new Set((S.membershipPayments||[]).map(p=>normName(p.name)+'|'+p.date+'|'+Math.round((p.amount||0)*100)));let added=0;data.payments.forEach(p=>{const k=normName(p.name)+'|'+p.date+'|'+Math.round((p.amount||0)*100);if(existing.has(k))return;const id=p.id||Date.now()+Math.random();S.membershipPayments.push({id,name:p.name,amount:p.amount,paid:p.paid!==false,notes:p.notes||'',plan:p.plan||'Package',date:p.date,at:p.at||new Date().toISOString()});existing.add(k);added++;const mk=p.date.slice(0,7);if(!S.membershipLedger[mk])S.membershipLedger[mk]=[];if(!S.membershipLedger[mk].find(e=>e.id===id))S.membershipLedger[mk].push({id,name:p.name,amount:p.amount,paid:p.paid!==false,notes:p.notes||'',at:p.at||new Date().toISOString()});});for(const nk in (data.clients||{})){const ic=data.clients[nk];let c=findClient(ic.name)||S.clientDB.find(x=>normName(x.name)===nk);if(!c){c={id:Date.now()+Math.random(),name:ic.name,membership:ic.membership||'',completed:ic.completedSessions||0,total:ic.totalSessions||0,type:ic.type||'pilates',notes:'',source:'Excel import',isFree:false,isNew:false,freeManualOff:false,paid:true,membershipFee:ic.membershipFee||0,purchaseHistory:ic.packages||[],lifetimeRevenue:ic.totalRevenue||0,purchaseCount:ic.purchaseCount||0};S.clientDB.push(c);}else{c.membership=ic.membership||c.membership;c.membershipFee=ic.membershipFee||c.membershipFee;c.completed=Math.max(c.completed||0,ic.completedSessions||0);c.total=Math.max(c.total||0,ic.totalSessions||0);c.paid=true;c.lifetimeRevenue=ic.totalRevenue||0;c.purchaseCount=ic.purchaseCount||0;c.purchaseHistory=ic.packages||[];}const st=S.pipeline[c.id];if(!st||st==='new_lead'||st==='trial_booked')S.pipeline[c.id]='active';}saveMembPay();saveMemb();saveDB();savePipe();saveAcct();console.log('Excel membership import: +'+added+' payments, '+Object.keys(data.clients||{}).length+' clients');return added;}
-async function loadExcelMembershipImport(force){const flag='sil-excel-import-v2';if(!force&&localStorage.getItem(flag))return 0;try{const r=await fetch('data/excel-import.json?v=2');if(!r.ok){console.warn('excel-import.json not found');return 0;}const data=await r.json();const n=mergeExcelMembershipImport(data);localStorage.setItem(flag,'1');if(S.cloudConfigured&&typeof SilCloud!=='undefined'&&SilCloud.isConfigured())await SilCloud.flushAllToCloud();return n;}catch(e){console.warn('Excel import failed',e);return 0;}}
+async function loadExcelMembershipImport(force){const flag='sil-excel-import-v2';if(!force&&localStorage.getItem(flag))return 0;if(!force&&(S.membershipPayments||[]).length>400){localStorage.setItem(flag,'1');return 0;}try{const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),25000);const r=await fetch('data/excel-import.json?v=2',{signal:ctrl.signal});clearTimeout(t);if(!r.ok){console.warn('excel-import.json not found');return 0;}const data=await r.json();const n=mergeExcelMembershipImport(data);localStorage.setItem(flag,'1');if(S.cloudConfigured&&typeof SilCloud!=='undefined'&&SilCloud.isConfigured())await SilCloud.flushAllToCloud();if(typeof render==='function'&&document.getElementById('app')?.style.display!=='none')render();return n;}catch(e){console.warn('Excel import failed',e);return 0;}}
 function showClientRevenue(id){const c=S.clientDB.find(x=>x.id===id);if(!c)return;const hist=(c.purchaseHistory||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));const rows=hist.length?hist.map(p=>`<div style="padding:8px 0;border-bottom:1px solid var(--sand)"><div style="font-weight:600">${p.date||'—'} · $${(p.amount||0).toFixed(2)}</div><div style="font-size:11px;color:var(--warm)">${p.package||''}${p.from?' · '+p.from+' → '+(p.to||'ongoing'):''}</div></div>`).join(''):'<div style="padding:16px;color:var(--light)">No purchase history on file.</div>';openModal(`<div class="modal-h"><h3>${c.name}</h3><div class="modal-x" onclick="closeModal()">✕</div></div><div class="modal-b"><div class="acct-totals" style="margin-bottom:12px"><div class="memb-card"><div class="memb-card-l">Lifetime revenue</div><div class="memb-card-v">$${(c.lifetimeRevenue||0).toFixed(2)}</div></div><div class="memb-card"><div class="memb-card-l">Purchases</div><div class="memb-card-v">${c.purchaseCount||hist.length}</div></div><div class="memb-card"><div class="memb-card-l">Sessions (packages)</div><div class="memb-card-v">${c.total||0}</div></div></div><div style="font-size:12px;font-weight:700;margin-bottom:8px">Purchase track record</div><div style="max-height:320px;overflow-y:auto">${rows}</div></div>`);}
 const setAcctView=v=>{S.acctView=v;render();};
 function ovPickWeekDay(y,m,d){S.ovWeekSelDk=dateKey(y,m,d);S.selDate=new Date(y,m,d);render();}
@@ -837,7 +837,7 @@ if(S.page==='membership'&&!isInstructor()){
   const claraRef=computeClaraCutRange(acctR.start,acctR.end,S.tab);
   h+=`<div class="mhdr"><h2 class="mtit">Accounting</h2><div class="mhr"><div class="tpills"><button class="tp ${S.tab==='pilates'?'on':''}" onclick="S.tab='pilates';render()">Pilates</button><button class="tp ${S.tab==='lagree'?'on':''}" onclick="S.tab='lagree';render()">Lagree</button></div></div></div>
   <div class="acct-view-bar"><span style="font-size:11px;font-weight:600;color:var(--warm)">View:</span><div class="tpills"><button class="tp ${av==='day'?'on':''}" onclick="setAcctView('day')">Day</button><button class="tp ${av==='week'?'on':''}" onclick="setAcctView('week')">Week</button><button class="tp ${av==='month'?'on':''}" onclick="setAcctView('month')">Month</button><button class="tp ${av==='custom'?'on':''}" onclick="setAcctView('custom')">Custom</button></div>${av==='month'?`<div class="sch-monthnav" style="margin-left:auto"><div class="arr" onclick="membMonthNav(-1)">‹</div><div class="lbl" style="font-size:14px;min-width:auto">${MONTHS[S.membMonth]} ${S.membYear}</div><div class="arr" onclick="membMonthNav(1)">›</div></div>`:''}</div>
-  <div style="font-size:12px;color:var(--warm);margin-bottom:10px">${acctR.label} · ${agg.rows.length} payment${agg.rows.length!==1?'s':''}</div>
+  <div style="font-size:12px;color:var(--warm);margin-bottom:10px">${acctR.label} · ${agg.rows.length} payment${agg.rows.length!==1?'s':''}${S.accountSettings?.importStats?` · ${S.accountSettings.importStats.paymentCount} total imported from Excel`:''}</div>
   <div class="acct-totals">
     <div class="memb-card"><div class="memb-card-l">Total collected</div><div class="memb-card-v">$${agg.total.toFixed(2)}</div></div>
     <div class="memb-card"><div class="memb-card-l">Paid</div><div class="memb-card-v" style="color:var(--grn)">$${agg.paid.toFixed(2)}</div></div>
@@ -1035,33 +1035,42 @@ async function refresh(){S.loading=true;S.err=null;S.errDismissed=false;render()
 
 // INIT
 (async function boot(){
-  if(typeof SilCloud!=='undefined')await SilCloud.initCloud();
-  mergeMaySchedule();mergeJuneSchedule();
-  const _dupesInit=dedupeClientDB();const _orphansInit=pruneOrphanClients();
-  if(_dupesInit||_orphansInit)localStorage.setItem('sil-dedup-v2',JSON.stringify({merged:_dupesInit,orphans:_orphansInit,remaining:S.clientDB.length,at:new Date().toISOString()}));
-  migrateMembershipPayments();applyAutoFreeNewTags();syncAllFreeToTrialBooked();syncScheduleFromCrm();
-  await loadExcelMembershipImport();
-  if(!S.ovWeekSelDk)S.ovWeekSelDk=dateKey(S.selDate.getFullYear(),S.selDate.getMonth(),S.selDate.getDate());
-  const { data: { session } } = (S.cloudConfigured&&typeof supabase!=='undefined')?await supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey).auth.getSession():{data:{session:null}};
-  if(session&&S.cloudConfigured){
-    const prof=await SilCloud.fetchProfile(session.user.id);
-    if(prof){S.role=prof.role;S.user=prof.username;S.instructorName=prof.instructor_name||null;}
-    await SilCloud.loadAllFromCloud();
-    SilCloud.subscribeRealtime();
-    S.cloudOk=true;
-    if(isInstructor()){if(!canAccessPage(S.page))S.page='schedule';if(!S.selInstructor&&myInstructorName())S.selInstructor=myInstructorName();}
-    document.getElementById("loginScreen").style.display="none";
-    document.getElementById("app").style.display="grid";
-    render();
-    if(!isInstructor())refresh();
-  }else if(S.role){
-    if(isInstructor()){if(!canAccessPage(S.page))S.page='schedule';if(!S.selInstructor&&myInstructorName())S.selInstructor=myInstructorName();}
-    document.getElementById("loginScreen").style.display="none";
-    document.getElementById("app").style.display="grid";
-    render();
-    if(!isInstructor())refresh();
-  }else{
-    showLogin();
+  try{
+    if(typeof SilCloud!=='undefined')await SilCloud.initCloud();
+    mergeMaySchedule();mergeJuneSchedule();
+    const _dupesInit=dedupeClientDB();const _orphansInit=pruneOrphanClients();
+    if(_dupesInit||_orphansInit)localStorage.setItem('sil-dedup-v2',JSON.stringify({merged:_dupesInit,orphans:_orphansInit,remaining:S.clientDB.length,at:new Date().toISOString()}));
+    migrateMembershipPayments();applyAutoFreeNewTags();syncAllFreeToTrialBooked();syncScheduleFromCrm();
+    if(!S.ovWeekSelDk)S.ovWeekSelDk=dateKey(S.selDate.getFullYear(),S.selDate.getMonth(),S.selDate.getDate());
+    const cfgOk=S.cloudConfigured&&typeof supabase!=='undefined'&&window.SUPABASE_CONFIG?.url&&window.SUPABASE_CONFIG?.anonKey;
+    let session=null;
+    if(cfgOk){try{const {data}=await supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey).auth.getSession();session=data?.session||null;}catch(e){console.warn('Supabase session',e);}}
+    if(session&&S.cloudConfigured){
+      const prof=await SilCloud.fetchProfile(session.user.id);
+      if(prof){S.role=prof.role;S.user=prof.username;S.instructorName=prof.instructor_name||null;}
+      await SilCloud.loadAllFromCloud();
+      SilCloud.subscribeRealtime();
+      S.cloudOk=true;
+      if(isInstructor()){if(!canAccessPage(S.page))S.page='schedule';if(!S.selInstructor&&myInstructorName())S.selInstructor=myInstructorName();}
+      document.getElementById("loginScreen").style.display="none";
+      document.getElementById("app").style.display="grid";
+      render();
+      setTimeout(()=>loadExcelMembershipImport().catch(()=>{}),50);
+      if(!isInstructor())setTimeout(()=>refresh().catch(()=>{}),100);
+    }else if(S.role){
+      if(isInstructor()){if(!canAccessPage(S.page))S.page='schedule';if(!S.selInstructor&&myInstructorName())S.selInstructor=myInstructorName();}
+      document.getElementById("loginScreen").style.display="none";
+      document.getElementById("app").style.display="grid";
+      render();
+      setTimeout(()=>loadExcelMembershipImport().catch(()=>{}),50);
+      if(!isInstructor())setTimeout(()=>refresh().catch(()=>{}),100);
+    }else{
+      showLogin();
+      setTimeout(()=>loadExcelMembershipImport().catch(()=>{}),200);
+    }
+  }catch(e){
+    console.error('Boot failed',e);
+    showLogin('Could not start — try refresh. '+((e&&e.message)||''));
   }
 })();
 </script></body></html>
