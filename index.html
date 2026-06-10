@@ -3,7 +3,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build" content="20260610-1152">
+<meta name="build" content="20260610-1208">
 <title>Silhouette Studio — Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -1240,7 +1240,9 @@ async function refresh(){S.loading=true;S.err=null;S.errDismissed=false;render()
     fetch(location.pathname+'?_='+Date.now(),{cache:'no-store',headers:{Range:'bytes=0-2047'}})
       .then(r=>r.text())
       .then(chunk=>{
-        const m=chunk.match(/<meta name="build" content="20260610-1152"]+)"/);
+        // Pattern built via concatenation so the pre-commit stamp hook can never match/corrupt it
+        const re=new RegExp('name="bui'+'ld" content="([^"]+)"');
+        const m=chunk.match(re);
         if(m&&m[1]&&m[1]!==BUILD){location.reload(true);}
       })
       .catch(()=>{});
