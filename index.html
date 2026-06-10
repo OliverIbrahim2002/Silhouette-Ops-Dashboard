@@ -3,7 +3,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build" content="20260610-1144">
+<meta name="build" content="20260610-1152">
 <title>Silhouette Studio — Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -277,7 +277,7 @@
 }
 </style>
 </head><body>
-<div id="loginScreen"><div class="login-box" style="text-align:center"><div class="logo">S</div><h2>Silhouette Studio</h2><p style="color:var(--warm)">Loading dashboard…</p></div></div>
+<div id="loginScreen"><div class="login-box" style="text-align:center"><div class="logo">S</div><h2>Silhouette Studio</h2><p style="color:var(--warm)" id="boot-msg">Starting…</p></div></div>
 <div class="L" id="app" style="display:none"></div>
 <div class="mob-more-menu" id="mobMore"></div>
 <nav class="mob-nav" id="mobNav"></nav>
@@ -1195,24 +1195,36 @@ function ovWeekDayClick(y,m,d){ovPickWeekDay(y,m,d);}
 function runClientCleanup(){const dupes=dedupeClientDB();const orphans=pruneOrphanClients();alert(`Cleanup complete.\n\n• ${dupes} duplicate record${dupes!==1?'s':''} merged\n• ${orphans} empty unused record${orphans!==1?'s':''} removed\n• ${S.clientDB.length} clients remaining`);render();}
 async function refresh(){S.loading=true;S.err=null;S.errDismissed=false;render();mergeMaySchedule();mergeJuneSchedule();mergeLagreeAdsCrmOnce();syncAllSessionsFromAttendance();const dupes=dedupeClientDB();const orphans=pruneOrphanClients();if(dupes||orphans)console.log(`Client cleanup: merged ${dupes} duplicates, removed ${orphans} orphans`);normalizeStateDates();migrateMembershipPayments();migrateAccountingData();initMembershipPlans();applyAutoFreeNewTags();syncAllFreeToTrialBooked();syncScheduleFromCrm();syncInactiveClients();S.clientDB.forEach(c=>{if(hasActiveMembership(c))try{getClientMembPkg(c);syncClientPayFromPayments(c);}catch(e){}});S.synced=new Date();S.loading=false;render();}
 
-// INIT
+// INIT — show the UI immediately, defer heavy sync work
 (function boot(){
   try{
-    mergeMaySchedule();mergeJuneSchedule();mergeLagreeAdsCrmOnce();syncAllSessionsFromAttendance();
-    const _dupesInit=dedupeClientDB();const _orphansInit=pruneOrphanClients();
-    if(_dupesInit||_orphansInit)localStorage.setItem('sil-dedup-v2',JSON.stringify({merged:_dupesInit,orphans:_orphansInit,remaining:S.clientDB.length,at:new Date().toISOString()}));
-    normalizeStateDates();migrateMembershipPayments();migrateAccountingData();initMembershipPlans();applyAutoFreeNewTags();syncAllFreeToTrialBooked();syncScheduleFromCrm();syncInactiveClients();S.clientDB.forEach(c=>{if(hasActiveMembership(c))try{getClientMembPkg(c);syncClientPayFromPayments(c);}catch(e){}});
+    // Minimal fast init: only what's needed before first render
+    mergeMaySchedule();mergeJuneSchedule();mergeLagreeAdsCrmOnce();
+    normalizeStateDates();migrateMembershipPayments();migrateAccountingData();initMembershipPlans();
     if(!S.ovWeekSelDk)S.ovWeekSelDk=dateKey(S.selDate.getFullYear(),S.selDate.getMonth(),S.selDate.getDate());
+
     if(S.role){
       if(isInstructor()){if(!canAccessPage(S.page))S.page='schedule';if(!S.selInstructor&&myInstructorName())S.selInstructor=myInstructorName();}
+      // Show the app immediately
       document.getElementById("loginScreen").style.display="none";
       document.getElementById("app").style.display="grid";
       render();
-      setTimeout(()=>loadExcelMembershipImport().catch(()=>{}),50);
-      if(!isInstructor())setTimeout(()=>refresh().catch(()=>{}),100);
+      // Defer all heavy sync/fetch work so the first frame paints first
+      setTimeout(()=>{
+        try{
+          syncAllSessionsFromAttendance();
+          const _dupesInit=dedupeClientDB();const _orphansInit=pruneOrphanClients();
+          if(_dupesInit||_orphansInit)localStorage.setItem('sil-dedup-v2',JSON.stringify({merged:_dupesInit,orphans:_orphansInit,remaining:S.clientDB.length,at:new Date().toISOString()}));
+          applyAutoFreeNewTags();syncAllFreeToTrialBooked();syncScheduleFromCrm();syncInactiveClients();
+          S.clientDB.forEach(c=>{if(hasActiveMembership(c))try{getClientMembPkg(c);syncClientPayFromPayments(c);}catch(e){}});
+          render();
+        }catch(e){console.warn('Deferred boot sync failed',e);}
+      },80);
+      setTimeout(()=>loadExcelMembershipImport().catch(()=>{}),200);
+      if(!isInstructor())setTimeout(()=>refresh().catch(()=>{}),600);
     }else{
       showLogin();
-      setTimeout(()=>loadExcelMembershipImport().catch(()=>{}),200);
+      setTimeout(()=>loadExcelMembershipImport().catch(()=>{}),400);
     }
   }catch(e){
     console.error('Boot failed',e);
@@ -1220,20 +1232,21 @@ async function refresh(){S.loading=true;S.err=null;S.errDismissed=false;render()
   }
 })();
 
-// Auto-update: silently check for a newer build and hard-reload when found
+// Auto-update: fetch only the first 2 KB of the page to check for a newer build
 (function startUpdatePoller(){
   const BUILD=document.querySelector('meta[name="build"]')?.content||'';
+  if(!BUILD)return;
   function check(){
-    fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'})
+    fetch(location.pathname+'?_='+Date.now(),{cache:'no-store',headers:{Range:'bytes=0-2047'}})
       .then(r=>r.text())
-      .then(html=>{
-        const m=html.match(/<meta name="build" content="20260610-1144"]+)"/);
+      .then(chunk=>{
+        const m=chunk.match(/<meta name="build" content="20260610-1152"]+)"/);
         if(m&&m[1]&&m[1]!==BUILD){location.reload(true);}
       })
       .catch(()=>{});
   }
-  // First check 30 s after load, then every 5 min
-  setTimeout(check,30000);
+  // First check 60 s after load, then every 5 min
+  setTimeout(check,60000);
   setInterval(check,5*60*1000);
   // Also check when the tab re-gains focus after being hidden
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check();});
