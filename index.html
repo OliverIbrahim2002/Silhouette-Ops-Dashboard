@@ -3,7 +3,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build" content="20260612-0605">
+<meta name="build" content="20260612-0612">
 <title>Silhouette Studio — Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -901,7 +901,7 @@ if(S.page==='overview'){
     CRM_STAGES.forEach(stage=>{
       const clients=S.clientDB.filter(c=>getClientStage(c.id)===stage.id&&crmMatch(c)).sort(crmSortRecent);
       h+=`<div class="crm-col"><div class="crm-col-h" style="background:${stage.bg};color:${stage.color}">${stage.label}<span class="cnt">${clients.length}</span></div>
-      <div class="crm-col-b" ondragover="crmDragOver(event)" ondragleave="crmDragLeave(event)" ondrop="crmDrop(event,'${stage.id}')">`;
+      <div class="crm-col-b" data-crm-col="${stage.id}" ondragover="crmDragOver(event)" ondragleave="crmDragLeave(event)" ondrop="crmDrop(event,'${stage.id}')">`;
       clients.forEach(c=>{
         const leadDt=c.leadCreatedAt?`<div style="font-size:9px;color:var(--light);margin-top:3px">Added ${fmtLeadDate(c.leadCreatedAt)}</div>`:'';
         const nextBk=getClientNextBooking(c);const bkDt=nextBk?`<div class="crm-next-book">📅 ${fmtShort(nextBk.date)} · ${fmtH(nextBk.hour)} · ${nextBk.tab}</div>`:'';
@@ -1159,10 +1159,12 @@ h+=`</aside>`;
 // Preserve scroll positions before wiping the DOM
 const _mn=document.querySelector('.mn');const _mnScroll=_mn?_mn.scrollTop:0;
 const _pipe=document.querySelector('.crm-pipe');const _pipeScroll=_pipe?_pipe.scrollLeft:0;
+const _colScroll={};document.querySelectorAll('.crm-col-b[data-crm-col]').forEach(el=>{_colScroll[el.getAttribute('data-crm-col')]=el.scrollTop;});
 document.getElementById("app").innerHTML=h;
 // Restore scroll positions
 const _mnNew=document.querySelector('.mn');if(_mnNew&&_mnScroll)_mnNew.scrollTop=_mnScroll;
 const _pipeNew=document.querySelector('.crm-pipe');if(_pipeNew&&_pipeScroll)_pipeNew.scrollLeft=_pipeScroll;
+document.querySelectorAll('.crm-col-b[data-crm-col]').forEach(el=>{const s=_colScroll[el.getAttribute('data-crm-col')];if(s)el.scrollTop=s;});
 
 // Mobile nav
 var mobEl=document.getElementById('mobNav');
